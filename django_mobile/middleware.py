@@ -2,7 +2,7 @@ import re
 from django_mobile import flavour_storage
 from django_mobile import set_flavour, _init_flavour
 from django_mobile.conf import settings
-
+from user_agents import parse
 
 class SetFlavourMiddleware(object):
     def process_request(self, request):
@@ -17,8 +17,22 @@ class SetFlavourMiddleware(object):
         flavour_storage.save(request, response)
         return response
 
-
 class MobileDetectionMiddleware(object):
+    
+    def process_request(self, request):
+        is_mobile = False
+
+        if 'HTTP_USER_AGENT' in request.META :
+            user_agent = request.META['HTTP_USER_AGENT']
+            if not parse(user_agent).is_pc:
+                is_mobile = True
+
+        if is_mobile:
+            set_flavour(settings.DEFAULT_MOBILE_FLAVOUR, request)
+        else:
+            set_flavour(settings.FLAVOURS[0], request)
+            
+class MobileDetectionMiddleware1(object):
     user_agents_test_match = (
         "w3c ", "acs-", "alav", "alca", "amoi", "audi",
         "avan", "benq", "bird", "blac", "blaz", "brew",
