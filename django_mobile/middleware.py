@@ -21,10 +21,15 @@ class MobileDetectionMiddleware(object):
     
     def process_request(self, request):
         is_mobile = False
-
         if 'HTTP_USER_AGENT' in request.META :
             user_agent = request.META['HTTP_USER_AGENT']
-            if not parse(user_agent).is_pc:
+            checkua = parse(user_agent)
+            if checkua.is_bot:
+                if checkua.device.model == 'Desktop':
+                    is_mobile = False
+                else:
+                    is_mobile = True
+            elif not checkua.is_pc:
                 is_mobile = True
 
         if is_mobile:
